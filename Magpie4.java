@@ -1,3 +1,4 @@
+import java.util.Scanner;
 /**
  * A program to carry on conversations with a human user.
  * This version:
@@ -12,15 +13,28 @@
  */
 public class Magpie4
 {
+  private Boolean greeting;
+  int currState;
+  public Magpie4(){
+   	greeting=true; // initial state
+   	currState=0;
+}
+ 
 	/**
 	 * Get a default greeting 	
 	 * @return a greeting
 	 */	
 	public String getGreeting()
 	{
-		return "Hello, let's talk.";
+		if (greeting = true) 
+    {
+			return "Hi, I'm cook-bot. Ask me for recipes or cooking advice!";
+		} 
+    else {
+			return "";
+		}
 	}
-	
+
 	/**
 	 * Gives a response to a user statement
 	 * 
@@ -28,32 +42,89 @@ public class Magpie4
 	 *            the user statement
 	 * @return a response based on the rules given
 	 */
-	public String getResponse(String statement)
+
+  //setState methods prints to user based on state variables
+  private void setState(int nextState){
+    switch (nextState) {
+      case 1:
+        System.out.println("Hi, I'm cook-bot. Ask me for recipes or cooking advice!");
+        break;
+      case 2:
+        System.out.println("Say something, please.");
+        break;
+      case 3:
+        System.out.println("I hope you enjoy eating that selection.");
+        break;
+      case 4:
+        System.out.println("What foods do your family enjoy?");
+        break;
+      case 5:
+        System.out.println(getRoboResponse());
+        break;
+      case 6:
+        System.out.println(getCommonFoodResponse() + ".");
+        break;
+      case 7:
+        System.out.println("I would recommend " + getFoodResponse());
+        break;
+      case 8:
+        System.out.println(getGreetingResponse());
+        break;
+    }
+  }
+
+  //ParseInput modified to return ints to be used in setState method in most cases
+	public String parseInput(String statement)
 	{
+
 		String response = "";
 		if (statement.length() == 0)
 		{
-			response = "Say something, please.";
+      setState(2);
 		}
 
 		else if (findKeyword(statement, "no") >= 0)
 		{
-			response = "Why so negative?";
+      setState(3);
 		}
 		else if (findKeyword(statement, "mother") >= 0
 				|| findKeyword(statement, "father") >= 0
 				|| findKeyword(statement, "sister") >= 0
 				|| findKeyword(statement, "brother") >= 0)
 		{
-			response = "Tell me more about your family.";
+      setState(4);
 		}
-
-		// Responses which require transformations
-		else if (findKeyword(statement, "I want to", 0) >= 0)
+		else if (findKeyword(statement, "robot") >= 0|| findKeyword(statement, "chatbot") >= 0|| findKeyword(statement, "AI") >= 0|| findKeyword(statement, "you") >= 0)
 		{
+      setState(5);
+		}
+		else if (findKeyword(statement, "salad") >= 0|| findKeyword(statement, "chicken") >= 0|| findKeyword(statement, "cheese") >= 0|| findKeyword(statement, "rice") >= 0|| findKeyword(statement, "tea") >= 0|| findKeyword(statement, "coffee") >= 0|| findKeyword(statement, "milk") >= 0|| findKeyword(statement, "eggs") >= 0)
+		{
+      setState(6);
+		}
+		else if (findKeyword(statement, "recipe") >= 0|| findKeyword(statement, "cook") >= 0|| findKeyword(statement, "breakfast") >= 0|| findKeyword(statement, "dinner") >= 0|| findKeyword(statement, "lunch") >= 0 || findKeyword(statement, "food") >= 0 || findKeyword(statement, "yes") >= 0)
+		{
+			setState(7);
+    }
+		else if (findKeyword(statement, "hi") >= 0|| findKeyword(statement, "hello") >= 0|| findKeyword(statement, "hey") >= 0|| findKeyword(statement, "greetings") >= 0)
+		{
+			setState(8);
+		}
+		else if (findKeyword(statement, "I want to", 0) >= 0){
 			response = transformIWantToStatement(statement);
 		}
-
+		else if ((findKeyword(statement, "Give me cooking advice", 0) >= 0) || (findKeyword(statement, "Give me cooking tips", 0) >= 0))
+		{
+			System.out.println("Are you a vegetarian?");
+			Scanner in = new Scanner (System.in);
+			String statement1 = in.nextLine();
+			if ((findKeyword(statement1, "yes" , 0) >=0)){
+				System.out.println("Make sure to take supplements or use lots of protein rich vegetables for a healthy diet. A good recipe: " + getVegetarianResponse());
+			}
+			else if ((findKeyword(statement1, "no" , 0) >=0)){
+				System.out.println("Try to eat more white meats and avoid fatty processed food.");
+			}
+		}
 		else
 		{
 			// Look for a two word (you <something> me)
@@ -92,7 +163,7 @@ public class Magpie4
 		}
 		int psn = findKeyword (statement, "I want to", 0);
 		String restOfStatement = statement.substring(psn + 9).trim();
-		return "What would it mean to " + restOfStatement + "?";
+		return "I can help you with "+ restOfStatement + "ing or perhaps cooking if you want?";
 	}
 
 	
@@ -119,12 +190,10 @@ public class Magpie4
 		int psnOfMe = findKeyword (statement, "me", psnOfYou + 3);
 		
 		String restOfStatement = statement.substring(psnOfYou + 3, psnOfMe).trim();
-		return "What makes you think that I " + restOfStatement + " you?";
+		return "What do you mean by me " + restOfStatement + "ing you?";
 	}
 	
-	
 
-	
 	
 	/**
 	 * Search for one word in phrase.  The search is not case sensitive.
@@ -189,7 +258,7 @@ public class Magpie4
 	 * Pick a default response to use if nothing else fits.
 	 * @return a non-committal string
 	 */
-	private String getRandomResponse()
+	private String getFoodResponse()
 	{
 		final int NUMBER_OF_RESPONSES = 4;
 		double r = Math.random();
@@ -198,22 +267,132 @@ public class Magpie4
 		
 		if (whichResponse == 0)
 		{
-			response = "Interesting, tell me more.";
+			response = "scrambled eggs and toast. Would you like a different food?";
 		}
 		else if (whichResponse == 1)
 		{
-			response = "Hmmm.";
+			response = "a sightly sauteed chicken breast. Would you like a different food?";
 		}
 		else if (whichResponse == 2)
 		{
-			response = "Do you really think so?";
+			response = "a creamy angel-hair carbonara. Would you like a different food?";
 		}
 		else if (whichResponse == 3)
 		{
-			response = "You don't say.";
+			response = "steak and mushrooms. Would you like a different food?";
 		}
 
 		return response;
 	}
-
+  	private String getVegetarianResponse()
+	{
+		final int NUMBER_OF_RESPONSES = 3;
+		double r = Math.random();
+		int whichResponse = (int)(r * NUMBER_OF_RESPONSES);
+		String response = "";
+		if (whichResponse == 0)
+		{
+			response = "I would reccomend a squash pasta.";
+		}
+		else if (whichResponse == 1)
+		{
+			response = "I would reccomend tofu cooked with tomatoes";
+		}
+		else if (whichResponse == 2)
+		{
+			response = "A pesto based pasta.";
+		}
+		return response;
+	}
+	private String getRandomResponse()
+	{
+		final int NUMBER_OF_RESPONSES = 5;
+		double r = Math.random();
+		int whichResponse = (int)(r * NUMBER_OF_RESPONSES);
+		String response = "";
+		
+		if (whichResponse == 0)
+		{
+			response = "Ask me for some recipes!";
+		}
+		else if (whichResponse == 1)
+		{
+			response = "My favorite food is instant ramen";
+		}
+		else if (whichResponse == 2)
+		{
+			response = "There are 95 calories in an apple.";
+		}
+		else if (whichResponse == 3)
+		{
+			response = "They call me cook-bot, but my name is really Benedict.";
+		}
+		else if (whichResponse == 4)
+		{
+			response = "What else would you like to talk about?";
+		}
+		return response;
+	}
+private String getCommonFoodResponse()
+	{
+		final int NUMBER_OF_RESPONSES = 3;
+		double r = Math.random();
+		int whichResponse = (int)(r * NUMBER_OF_RESPONSES);
+		String response = "";
+		
+		if (whichResponse == 0)
+		{
+			response = "I love that food";
+		}
+		else if (whichResponse == 1)
+		{
+			response = "I eat a lot of that food";
+		}
+		else if (whichResponse == 2)
+		{
+			response = "My favorite recipes have that food";
+		}
+		return response;
+	}
+  private String getGreetingResponse()
+  {
+    final int NUMBER_OF_RESPONSES = 3;
+    double r = Math.random();
+    int whichResponse = (int)(r * NUMBER_OF_RESPONSES);
+    String response = "";
+    if (whichResponse == 0)
+    {
+      response = "Hello. What is your favorite food?";
+    }
+    else if (whichResponse == 1)
+    {
+      response = "Hi. I'm cookbot, nice to meet you.";
+    }
+    else if (whichResponse == 2)
+    {
+      response = "I am cookbot. I love cooking.";
+    }
+    return response;
+  }
+	private String getRoboResponse()
+	{
+		final int NUMBER_OF_RESPONSES = 3;
+		double r = Math.random();
+		int whichResponse = (int)(r * NUMBER_OF_RESPONSES);
+		String response = "";
+		
+		if (whichResponse == 0)
+		{
+			response = "I am a chatbot that focuses around food.";
+		}
+		else if (whichResponse == 1)
+		{
+			response = "I use keywords to tailor responses to your food questions.";
+		}
+		else if (whichResponse == 2)
+		{
+			response = "Cookbots are a declining species of chatbots.";
+		}
+		return response;
+	}
 }
